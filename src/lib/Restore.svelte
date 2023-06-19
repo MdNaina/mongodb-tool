@@ -1,11 +1,25 @@
 <script>
   import { invoke } from "@tauri-apps/api/tauri";
   import { open } from "@tauri-apps/api/dialog";
+  import { listen } from "@tauri-apps/api/event";
+  import { onDestroy } from "svelte";
 
   let url = "";
   let db = "";
-  let outputMsg = "";
   let path = null;
+  let progressing = false;
+  let unListen = null;
+
+  async function setupStatusEvent() {
+    unListen = await listen("status", (e) => {
+      alert(e.payload);
+      progressing = false;
+    });
+  }
+
+  setupStatusEvent();
+
+  onDestroy(unListen);
 
   async function chooseDir() {
     const val = await open({ directory: true });
@@ -22,8 +36,8 @@
   async function generateBackup() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
     if (!url || !path) return alert("messing");
-    outputMsg = await invoke("restore_db", { url, path, db });
-    setTimeout(() => (outputMsg = ""), 5000);
+    progressing = true;
+    await invoke("restore_db", { url, path, db });
   }
 </script>
 
@@ -53,9 +67,8 @@
       />
     </div>
     <br />
-    <button type="submit">Restore</button>
+    <button type="submit" disabled={progressing}>Restore</button>
   </form>
-  <p>{outputMsg}</p>
 </div>
 
 <style>

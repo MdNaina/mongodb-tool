@@ -1,11 +1,26 @@
 <script>
   import { invoke } from "@tauri-apps/api/tauri";
   import { open } from "@tauri-apps/api/dialog";
+  import { listen } from "@tauri-apps/api/event";
+  import { onDestroy } from "svelte";
 
   let url = "";
   let db = "";
   let outputMsg = "";
   let folder = null;
+  let progressing = false;
+  let unListen = null;
+
+  async function setupStatusEvent() {
+    unListen = await listen("status", (e) => {
+      alert(e.payload);
+      progressing = false;
+    });
+  }
+
+  setupStatusEvent();
+
+  onDestroy(unListen);
 
   $: if (db.length) {
     const urlObj = new URL(url);
@@ -24,6 +39,7 @@
   async function generateBackup() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
     if (!url || !folder) return alert("messing");
+    progressing = true;
     outputMsg = await invoke("generate_backup", { url, folder, db });
     setTimeout(() => (outputMsg = ""), 5000);
   }
@@ -54,9 +70,8 @@
         bind:value={folder}
       />
     </div>
-    <button type="submit">Backup</button>
+    <button type="submit" disabled={progressing}>Backup</button>
   </form>
-  <p>{outputMsg}</p>
 </div>
 
 <style>
