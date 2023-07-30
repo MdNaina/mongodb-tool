@@ -71,7 +71,7 @@ const downloadAndExtractFiles = async (url, targetPath) => {
       if (requireProgram[name]) {
         path.join()
         const destinationPath = path.join(distDir, `${requireProgram[name]}-${suffixObj[platformName]}${ext}`);
-        fs.renameSync(sourcePath, destinationPath);
+        fs.copyFileSync(sourcePath, destinationPath);
       }
     });
     fs.rmSync(extractionTempPath, { recursive: true });
