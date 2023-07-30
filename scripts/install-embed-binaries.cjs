@@ -82,5 +82,18 @@ const targetPath = `${tempDir}/archive`;
 
 
 // Call the function to download and extract the files
-downloadAndExtractFiles(url, targetPath);
+downloadAndExtractFiles(url, targetPath).then(() => {
+  fs.readdir(distDir, (err, files) => {
+    if (err) {
+      console.error('Error reading directory:', err);
+    } else {
+      console.log('Files in the directory:');
+      files.forEach((file) => {
+        console.log(file);
+      });
+    }
+  });
+});
+
+
 
